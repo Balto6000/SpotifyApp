@@ -1,28 +1,38 @@
 package com.example.spotifyapp
 
+import android.graphics.drawable.Icon
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.Start
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.spotifyapp.ui.theme.SpotifyAppTheme
@@ -48,7 +58,8 @@ class MainActivity : ComponentActivity() {
 fun SpotifyApp() {
     //var tiempo by remember { mutableFloatStateOf(0f)}
     Column (horizontalAlignment = CenterHorizontally,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .padding(20.dp)) {
         Text(text = "Now Playing")
         Spacer(Modifier.height(10.dp))
@@ -61,21 +72,22 @@ fun SpotifyApp() {
         Slider(value = 0f, onValueChange = {  })
         Text(text = 0f.toString(), modifier = Modifier.align(Start))
         Spacer(Modifier.height(60.dp))
-        Row {
-            Button(onClick = { /*TODO*/ }) {
-
+        Row(
+            horizontalArrangement = Arrangement.SpaceAround, modifier = Modifier.fillMaxWidth()) {
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(Icons.Default.Shuffle, contentDescription = "Aleatorio")
             }
-            Button(onClick = { /*TODO*/ }) {
-
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(Icons.Default.SkipPrevious, contentDescription = "Anterior")
             }
-            Button(onClick = { /*TODO*/ }) {
-
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(Icons.Default.PlayArrow, contentDescription = "Pusar/Reproducir")
             }
-            Button(onClick = { /*TODO*/ }) {
-
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(Icons.Default.SkipNext, contentDescription = "Siguiente")
             }
-            Button(onClick = { /*TODO*/ }) {
-                
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(Icons.Default.Repeat, contentDescription = "Repetir")
             }
         }
     }
