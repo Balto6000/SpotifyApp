@@ -9,12 +9,10 @@ data class Cancion(
     val audioUrl: Int
 )
 
-fun listaCanciones(): List<Cancion> {
-    return listOf(
-        Cancion("DIAMOND", R.drawable.cancion1, "3:30", R.raw.audio1),
-        Cancion("GOLDEN", R.drawable.cancion2, "4:15", R.raw.audio2),
-        Cancion("SILVER", R.drawable.cancion3, "3:45", R.raw.audio3),
-        Cancion("PLATINUM", R.drawable.cancion4, "5:00", R.raw.audio4),
-        Cancion("RUBY", R.drawable.cancion5, "4:30", R.raw.audio5)
-    )
-}
+val listaCanciones = listOf(
+    Cancion("DIAMOND", R.drawable.cancion1, "3:30", R.raw.audio1),
+    Cancion("GOLDEN", R.drawable.cancion2, "4:15", R.raw.audio2),
+    Cancion("SILVER", R.drawable.cancion3, "3:45", R.raw.audio3),
+    Cancion("PLATINUM", R.drawable.cancion4, "5:00", R.raw.audio4),
+    Cancion("RUBY", R.drawable.cancion5, "4:30", R.raw.audio5)
+)

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.Shuffle
@@ -27,6 +28,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.Start
 import androidx.compose.ui.Modifier
@@ -37,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.spotifyapp.shared.SpotifyViewModel
 import com.example.spotifyapp.ui.theme.SpotifyAppTheme
-import com.example.spotifyapp.shared.listaCanciones
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,7 +62,8 @@ fun SpotifyApp() {
     val contexto = LocalContext.current
 
     val spotifyViewModel: SpotifyViewModel = viewModel()
-    val canciones = listaCanciones()
+    val cancionActual = spotifyViewModel.cancionActual
+    val reproduciendose = spotifyViewModel.reproduciendose.collectAsState()
 
     LaunchedEffect(Unit) {
         spotifyViewModel.crearExoPlayer(contexto)
@@ -77,11 +79,11 @@ fun SpotifyApp() {
         Text(text = "Now Playing")
         Spacer(Modifier.height(10.dp))
 
-        Text(text = "DIAMOND")
+        Text(text = cancionActual.value.nombre)
         Spacer(Modifier.height(30.dp))
         Image(
-            painter = painterResource(id = R.drawable.cancion1),
-            contentDescription = "Imagen Cancion",
+            painter = painterResource(id = cancionActual.value.imagenId),
+            contentDescription = "Imagen Cancion ${cancionActual.value.nombre}",
             modifier = Modifier.clip(shape = RoundedCornerShape(20.dp))
         )
         Spacer(Modifier.height(10.dp))
@@ -98,7 +100,12 @@ fun SpotifyApp() {
                 Icon(Icons.Default.SkipPrevious, contentDescription = "Anterior")
             }
             IconButton(onClick = { spotifyViewModel.reproducirCancion() }) {
-                Icon(Icons.Default.PlayArrow, contentDescription = "Pausar/Reproducir")
+                val iconoReproduccion = if (reproduciendose.value) {
+                    Icons.Default.Pause
+                } else {
+                    Icons.Default.PlayArrow
+                }
+                Icon(iconoReproduccion, contentDescription = "Pausar/Reproducir")
             }
             IconButton(onClick = { spotifyViewModel.siguienteCancion(contexto) }) {
                 Icon(Icons.Default.SkipNext, contentDescription = "Siguiente")

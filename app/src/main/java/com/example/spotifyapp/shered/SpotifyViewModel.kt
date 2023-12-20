@@ -1,6 +1,7 @@
 package com.example.spotifyapp.shared
 
 import android.content.Context
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
@@ -18,15 +19,17 @@ class SpotifyViewModel : ViewModel() {
     private val _exoPlayer: MutableStateFlow<ExoPlayer?> = MutableStateFlow(null)
     val exoPlayer = _exoPlayer.asStateFlow()
 
-    private val _actual = MutableStateFlow(R.raw.audio1)
-    val actual = _actual.asStateFlow()
-
     private val _duracion = MutableStateFlow(0)
     val duracion = _duracion.asStateFlow()
 
     private val _progreso = MutableStateFlow(0)
     val progreso = _progreso.asStateFlow()
 
+    private val _reproduciendose = MutableStateFlow(true)
+    val reproduciendose = _reproduciendose.asStateFlow()
+
+    var indiceCancionActual = mutableStateOf(0)
+    var cancionActual = mutableStateOf(listaCanciones[indiceCancionActual.value])
     fun crearExoPlayer(context: Context) {
         _exoPlayer.value = ExoPlayer.Builder(context).build()
         _exoPlayer.value!!.prepare()
@@ -34,59 +37,53 @@ class SpotifyViewModel : ViewModel() {
     }
 
     fun hacerSonarMusica(context: Context) {
-        val cancionActual = listaCanciones().find { it.audioUrl == _actual.value }
-        if (cancionActual != null) {
-            var cancion =
-                MediaItem.fromUri("android.resource://${context.packageName}/${cancionActual.audioUrl}")
-            _exoPlayer.value!!.setMediaItem(cancion)
-            _exoPlayer.value!!.playWhenReady = true
-            _exoPlayer.value!!.addListener(object : Player.Listener {
-                override fun onPlaybackStateChanged(playbackState: Int) {
-                    if (playbackState == Player.STATE_READY) {
-                        _duracion.value = _exoPlayer.value!!.duration.toInt()
+        val cancion =
+            MediaItem.fromUri("android.resource://${context.packageName}/${cancionActual.value.audioUrl}")
+        _exoPlayer.value!!.setMediaItem(cancion)
+        _exoPlayer.value!!.playWhenReady = true
+        _exoPlayer.value!!.addListener(object : Player.Listener {
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == Player.STATE_READY) {
+                    _duracion.value = _exoPlayer.value!!.duration.toInt()
 
-                        viewModelScope.launch {
-                            while (isActive) {
-                                _progreso.value = _exoPlayer.value!!.currentPosition.toInt()
-                                delay(1000)
-                            }
+                    viewModelScope.launch {
+                        while (isActive) {
+                            _progreso.value = _exoPlayer.value!!.currentPosition.toInt()
+                            delay(1000)
                         }
-                    } else if (playbackState == Player.STATE_BUFFERING) {
-
-                    } else if (playbackState == Player.STATE_ENDED) {
-                        siguienteCancion(context)
-
-                    } else if (playbackState == Player.STATE_IDLE) {
                     }
+                } else if (playbackState == Player.STATE_BUFFERING) {
+
+                } else if (playbackState == Player.STATE_ENDED) {
+                    siguienteCancion(context)
+
+                } else if (playbackState == Player.STATE_IDLE) {
                 }
             }
-            )
         }
+        )
     }
 
     fun siguienteCancion(context: Context) {
-        val listaCanciones = listaCanciones()
-        val indexActual = listaCanciones.indexOfFirst { it.audioUrl == _actual.value }
-
-        val newIndex = (indexActual + 1) % listaCanciones.size
-        val nuevaCancion = listaCanciones[newIndex]
-
-        _actual.value = nuevaCancion.audioUrl
-        cargarYReproducirCancion(context, nuevaCancion)
+        indiceCancionActual.value = (indiceCancionActual.value + 1) % listaCanciones.size
+        cancionActual.value = listaCanciones[indiceCancionActual.value]
+        cargarYReproducirCancion(context, cancionActual.value)
+        _reproduciendose.value = !_exoPlayer.value!!.isPlaying
     }
 
     fun anteriorCancion(context: Context) {
-        val listaCanciones = listaCanciones()
-        val indexActual = listaCanciones.indexOfFirst { it.audioUrl == _actual.value }
-
-        val newIndex = if (indexActual == 0) listaCanciones.size - 1 else indexActual - 1
-        val nuevaCancion = listaCanciones[newIndex]
-
-        _actual.value = nuevaCancion.audioUrl
-        cargarYReproducirCancion(context, nuevaCancion)
+        indiceCancionActual.value = if (indiceCancionActual.value > 0) {
+            indiceCancionActual.value - 1
+        } else {
+            listaCanciones.size - 1
+        }
+        cancionActual.value = listaCanciones[indiceCancionActual.value]
+        cargarYReproducirCancion(context, cancionActual.value)
+        _reproduciendose.value = !_exoPlayer.value!!.isPlaying
     }
 
     fun reproducirCancion() {
+        _reproduciendose.value = !_exoPlayer.value!!.isPlaying
         if (_exoPlayer.value!!.isPlaying) {
             _exoPlayer.value!!.pause()
         } else {
@@ -95,7 +92,8 @@ class SpotifyViewModel : ViewModel() {
     }
 
     private fun cargarYReproducirCancion(context: Context, cancion: Cancion) {
-        val mediaItem = MediaItem.fromUri("android.resource://${context.packageName}/${cancion.audioUrl}")
+        val mediaItem =
+            MediaItem.fromUri("android.resource://${context.packageName}/${cancion.audioUrl}")
 
         _exoPlayer.value?.setMediaItem(mediaItem)
         _exoPlayer.value?.prepare()
