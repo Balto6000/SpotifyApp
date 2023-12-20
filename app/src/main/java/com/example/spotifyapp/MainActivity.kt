@@ -80,13 +80,13 @@ fun SpotifyApp() {
         Spacer(Modifier.height(10.dp))
 
         Text(text = cancionActual.value.nombre)
-        Spacer(Modifier.height(30.dp))
         Image(
             painter = painterResource(id = cancionActual.value.imagenId),
             contentDescription = "Imagen Cancion ${cancionActual.value.nombre}",
-            modifier = Modifier.clip(shape = RoundedCornerShape(20.dp))
+            modifier = Modifier
+                .clip(shape = RoundedCornerShape(20.dp))
+                .weight(1f)
         )
-        Spacer(Modifier.height(10.dp))
         Slider(value = 0f, onValueChange = { })
         Text(text = 0f.toString(), modifier = Modifier.align(Start))
         Spacer(Modifier.height(60.dp))
