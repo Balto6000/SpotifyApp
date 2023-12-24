@@ -30,6 +30,16 @@ class SpotifyViewModel : ViewModel() {
 
     var indiceCancionActual = mutableStateOf(0)
     var cancionActual = mutableStateOf(listaCanciones[indiceCancionActual.value])
+
+    private val _modoReproduccion = MutableStateFlow(Reproduccion.NORMAL)
+    val modoReproduccion = _modoReproduccion.asStateFlow()
+
+    enum class Reproduccion {
+        NORMAL,
+        ALEATORIA,
+        BUCLE
+    }
+
     fun crearExoPlayer(context: Context) {
         _exoPlayer.value = ExoPlayer.Builder(context).build()
         _exoPlayer.value!!.prepare()
@@ -65,22 +75,43 @@ class SpotifyViewModel : ViewModel() {
     }
 
     fun siguienteCancion(context: Context) {
-        indiceCancionActual.value = (indiceCancionActual.value + 1) % listaCanciones.size
+        if (_modoReproduccion.value == Reproduccion.ALEATORIA) {
+            val nuevoIndice = (0 until listaCanciones.size).random()
+            indiceCancionActual.value = nuevoIndice
+        } else if (_modoReproduccion.value == Reproduccion.BUCLE) {
+        } else {
+            indiceCancionActual.value = (indiceCancionActual.value + 1) % listaCanciones.size
+        }
+
         cancionActual.value = listaCanciones[indiceCancionActual.value]
         cargarYReproducirCancion(context, cancionActual.value)
         _reproduciendose.value = !_exoPlayer.value!!.isPlaying
     }
 
+
     fun anteriorCancion(context: Context) {
-        indiceCancionActual.value = if (indiceCancionActual.value > 0) {
-            indiceCancionActual.value - 1
+        if (_modoReproduccion.value == Reproduccion.ALEATORIA) {
+            if (_progreso.value <= 3000) {
+                val nuevoIndice = (0 until listaCanciones.size).random()
+                indiceCancionActual.value = nuevoIndice
+            }
+        } else if (_modoReproduccion.value == Reproduccion.BUCLE) {
         } else {
-            listaCanciones.size - 1
+            if (_progreso.value <= 3000) {
+                indiceCancionActual.value =
+                    if (indiceCancionActual.value > 0) {
+                        indiceCancionActual.value - 1
+                    } else {
+                        listaCanciones.size - 1
+                    }
+            }
         }
+
         cancionActual.value = listaCanciones[indiceCancionActual.value]
         cargarYReproducirCancion(context, cancionActual.value)
         _reproduciendose.value = !_exoPlayer.value!!.isPlaying
     }
+
 
     fun reproducirCancion() {
         _reproduciendose.value = !_exoPlayer.value!!.isPlaying
@@ -89,6 +120,27 @@ class SpotifyViewModel : ViewModel() {
         } else {
             _exoPlayer.value!!.play()
         }
+    }
+
+    fun reproducirAleatoria() {
+        _modoReproduccion.value =
+            if (_modoReproduccion.value != Reproduccion.ALEATORIA) Reproduccion.ALEATORIA else Reproduccion.NORMAL
+        _exoPlayer.value?.shuffleModeEnabled = (_modoReproduccion.value == Reproduccion.ALEATORIA)
+    }
+
+    fun reproducirBucle() {
+        _modoReproduccion.value =
+            if (_modoReproduccion.value != Reproduccion.BUCLE) Reproduccion.BUCLE else Reproduccion.NORMAL
+        _exoPlayer.value?.repeatMode = when (_modoReproduccion.value) {
+            Reproduccion.BUCLE -> Player.REPEAT_MODE_ONE
+            else -> Player.REPEAT_MODE_OFF
+        }
+    }
+
+    fun actualizarProgresoCancion(nuevaPosicion: Int) {
+        val exoPlayer = _exoPlayer.value ?: return
+
+        exoPlayer.seekTo(nuevaPosicion.toLong())
     }
 
     private fun cargarYReproducirCancion(context: Context, cancion: Cancion) {
